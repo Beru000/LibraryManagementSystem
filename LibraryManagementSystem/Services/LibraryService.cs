@@ -36,8 +36,8 @@ namespace LibraryManagementSystem.Services
         // Add a new book
         public async Task AddBookAsync(string title, string author, string genre)
         {
-            int bookId= _books.Count + 1; // Generate new Id
-            Book book=new Book(bookId, title, author, genre);
+            int bookId = _books.Count + 1; // Generate new Id
+            Book book = new Book(bookId, title, author, genre);
             _books.Add(book);
             await SaveDataAsync();
         }
@@ -54,47 +54,66 @@ namespace LibraryManagementSystem.Services
         // Borrow a book
         public async Task<bool> BorrowBookAsync(int bookId, int memberId)
         {
-
-            // 1. Find the book using LINQ (FirstOrDefault)
-            // 2. Find the member using LINQ (FirstOrDefault)
-            // 3. If book or member not found, return false
-            // 4. If book is not available, return false
-            // 5. Set book.IsAvailable = false
-            // 6. Add bookId to member.BorrowedBookIds
-            // 7. Create a new BorrowRecord and add to _borrowRecords
-            // 8. Save data and return true
+            var book = _books.FirstOrDefault(b => b.Id == bookId);
+            var member = _members.FirstOrDefault(m => m.Id == memberId);
+            if (book == null || member == null)
+            {
+                return false;
+            }
+            if (!book.IsAvailable)
+            {
+                return false;
+            }
+            book.IsAvailable = false;
+            member.BorrowedBookIds.Add(bookId);
+            int recordId = _borrowRecords.Count + 1;
+            var record = new BorrowRecord(recordId, bookId, memberId);
+            await SaveDataAsync();
+            return true;
         }
 
         // Return a book
         public async Task<bool> ReturnBookAsync(int bookId, int memberId)
         {
-            // 1. Find the book and member using LINQ
-            // 2. If either not found, return false
-            // 3. Set book.IsAvailable = true
-            // 4. Remove bookId from member.BorrowedBookIds
-            // 5. Find the borrow record and set ReturnDate = DateTime.Now
-            // 6. Save data and return true
+            var book = _books.FirstOrDefault(b => b.Id == bookId);
+            var member = _members.FirstOrDefault(m => m.Id == memberId);
+            if (book == null || member == null)
+            {
+                return false;
+            }
+            book.IsAvailable = true;
+            member.BorrowedBookIds.Remove(bookId);
+            var record = _borrowRecords.FirstOrDefault(r => r.BookId == bookId && r.MemberId == memberId&&r.ReturnDate==null);
+            if (record != null)
+            {
+                record.ReturnDate = DateTime.Now;
+            }
+            await SaveDataAsync();
+            return true;
         }
 
         // Get all available books — LINQ
         public List<Book> GetAvailableBooks()
         {
-            // return only books where IsAvailable is true
+            return _books.Where(b => b.IsAvailable).ToList();
         }
 
         // Search books by title or author — LINQ
         public List<Book> SearchBooks(string query)
         {
-            // return books where Title OR Author contains the query
-            // hint: use .Contains() and ignore case with .ToLower()
+             return _books.Where(b => b.Title.ToLower().Contains(query.ToLower()) || b.Author.ToLower().Contains(query.ToLower())).ToList();
         }
 
         // Get all books a member is currently borrowing — LINQ
         public List<Book> GetMemberBooks(int memberId)
         {
-            // 1. Find the member
-            // 2. Return books where Id is in member.BorrowedBookIds
-            // hint: use .Contains()
+            var member=_members.FirstOrDefault(m => m.Id == memberId);
+            if(member==null)
+            {
+                return new List<Book>();
+            }
+            var books = _books.Where(b=>member.BorrowedBookIds.Contains(b.Id)).ToList();
+            return books;
         }
 
         public List<Book> GetAllBooks() => _books;
