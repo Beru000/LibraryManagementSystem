@@ -9,9 +9,11 @@ namespace LibraryManagementSystem.Services
         public async Task SaveAsync<T>(string fileName, List<T> data)
         {
             string filePath = Path.Combine(_dataPath, fileName);
-            Directory.CreateDirectory(_dataPath);
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string json = JsonSerializer.Serialize(data, options);
+            if (!Directory.Exists(_dataPath))
+            {
+                Directory.CreateDirectory(_dataPath);
+            } 
+            string json = JsonSerializer.Serialize(data);
             await File.WriteAllTextAsync(filePath, json);
         }
 

@@ -4,17 +4,14 @@ namespace LibraryManagementSystem.Services
 {
     public class LibraryService
     {
-        private List<Book> _books;
-        private List<Member> _members;
-        private List<BorrowRecord> _borrowRecords;
+        private List<Book> _books= new List<Book>();
+        private List<Member> _members= new List<Member>();
+        private List<BorrowRecord> _borrowRecords= new List<BorrowRecord>();
         private readonly FileService _fileService;
 
         public LibraryService(FileService fileService)
         {
             _fileService = fileService;
-            _books = new List<Book>();
-            _members = new List<Member>();
-            _borrowRecords = new List<BorrowRecord>();
         }
 
         // Load all data from files when program starts
