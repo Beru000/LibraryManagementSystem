@@ -15,8 +15,8 @@ namespace LibraryManagementSystem.Services.Logics
 
         public async Task<List<Book>> GetAvailableBooksAsync()
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.BookFilePath);
-            return _books.Where(b => b.IsAvailable).ToList();
+            _books = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
+            return _books.Where(b => b.BookIsAvailable).ToList();
         }
 
     }

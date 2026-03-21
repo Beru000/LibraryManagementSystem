@@ -13,13 +13,13 @@ namespace LibraryManagementSystem.Services.Logics
             _fileService = fileService;
         }
 
-        public async Task AddBookAsync(string name, string email)
+        public async Task AddMemberAsync(string name, string email)
         {
-            _members = await _fileService.LoadAsync<Member>(Constants.MemberFilePath);
+            _members = await _fileService.LoadAsync<Member>(Constants.FilePaths.Members);
             int memberId = _members.Count + 1;
             Member member = new Member(memberId, name, email);
             _members.Add(member);
-            await _fileService.SaveAsync(Constants.MemberFilePath, _members);
+            await _fileService.SaveAsync(Constants.FilePaths.Members, _members);
         }
     }
 }

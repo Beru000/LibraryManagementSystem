@@ -15,20 +15,20 @@ namespace LibraryManagementSystem.Services.Logics
         }
         public async Task<bool> ReturnBookAsync(int bookId, int memberId)
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.BookFilePath);
-            _members = await _fileService.LoadAsync<Member>(Constants.MemberFilePath);
-            var book = _books.FirstOrDefault(b => b.Id == bookId);
-            var member = _members.FirstOrDefault(m => m.Id == memberId);
+            _books = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
+            _members = await _fileService.LoadAsync<Member>(Constants.FilePaths.Members);
+            var book = _books.FirstOrDefault(b => b.BookID == bookId);
+            var member = _members.FirstOrDefault(m => m.MemberID == memberId);
             if (book == null || member == null)
             {
                 return false;
             }
-            if (book.IsAvailable)
+            if (book.BookIsAvailable)
             {
                 return false; 
             }
-            book.IsAvailable = true; 
-            await _fileService.SaveAsync(Constants.BookFilePath, _books); 
+            book.BookIsAvailable = true; 
+            await _fileService.SaveAsync(Constants.FilePaths.Books, _books); 
             return true;
         }
     }

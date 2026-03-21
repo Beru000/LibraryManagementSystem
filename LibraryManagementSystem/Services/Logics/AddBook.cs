@@ -15,11 +15,11 @@ namespace LibraryManagementSystem.Services.Logics
 
         public async Task AddBookAsync(string title, string author, string genre)
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.BookFilePath);
+            _books = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
             int bookId = _books.Count + 1; 
             Book book = new Book(bookId, title, author, genre);
             _books.Add(book);
-            await _fileService.SaveAsync(Constants.BookFilePath, _books);
+            await _fileService.SaveAsync(Constants.FilePaths.Books, _books);
         }
     }
 }

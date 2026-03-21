@@ -1,36 +1,70 @@
 ﻿using LibraryManagementSystem.Models;
 using LibraryManagementSystem.Services.Filepath;
+using LibraryManagementSystem.Services.Logics.Base;
 
 namespace LibraryManagementSystem.Services.Logics
 {
     public class BorrowBook
     {
-        private List<Member> _members = new List<Member>();
-        private List<Book> _books = new List<Book>();
-        private readonly FileService _fileService;
+        #region Properties
+        private readonly LogicResultBase _result = new LogicResultBase();
 
-        public BorrowBook(FileService fileService)
+        private readonly FileService _fileService;
+        private readonly int _bookID;
+        private readonly int _memberID;
+
+        private List<BorrowRecord> _borrowRecords = new List<BorrowRecord>();
+        #endregion
+
+        #region Constructors
+        public BorrowBook(FileService fileService, int bookID, int memberID)
         {
             _fileService = fileService;
+            _bookID = bookID;
+            _memberID = memberID;
+        }
+        #endregion
+
+        #region Methods
+        public async Task<LogicResultBase> Execute()
+        {
+            await CreateBorrowRecord();
+            if (!_result.IsError)
+            {
+                await EditMemberBorrowedBooks();
+            }
+
+            return _result;
         }
 
-        public async Task<bool> BorrowBookAsync(int bookId, int memberId)
+        async Task CreateBorrowRecord()
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.BookFilePath);
-            _members = await _fileService.LoadAsync<Member>(Constants.MemberFilePath);
-            var book = _books.FirstOrDefault(b => b.Id == bookId);
-            var member = _members.FirstOrDefault(m => m.Id == memberId);
-            if (book == null || member == null)
-            {
-                return false;
-            }
-            if (!book.IsAvailable)
-            {
-                return false;
-            }
-            book.IsAvailable = false; 
-            await _fileService.SaveAsync(Constants.BookFilePath, _books); 
-            return true;
+            _borrowRecords = await _fileService.LoadAsync<BorrowRecord>(Constants.FilePaths.BorrowRecords);
+
+            var borrowRecord = new BorrowRecord(bookId: _bookID, memberId: _memberID);
+            _borrowRecords.Add(borrowRecord);
+
+            await _fileService.SaveAsync(Constants.FilePaths.BorrowRecords, _borrowRecords);
         }
+
+        async Task EditMemberBorrowedBooks()
+        {
+            var memberBorrowedBookIDs = _borrowRecords.Where(item => item.BorrowRecordMemberID == _memberID).Select(item => item.BorrowRecordBookID).ToList();
+
+            var editMemberLogic = new EditMember(
+                fileService: _fileService,
+                memberID: _memberID,
+                memberBorrowedBookIDs: memberBorrowedBookIDs
+            );
+
+            var editMemberResult = await editMemberLogic.Execute();
+
+            if (editMemberResult.IsError)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = editMemberResult.ErrorMessage;
+            }
+        }
+        #endregion
     }
 }

@@ -15,14 +15,14 @@ namespace LibraryManagementSystem.Services.Logics
 
         public async Task<List<Book>> GetMemberBooksAsync(int memberId)
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.BookFilePath);
-            _members = await _fileService.LoadAsync<Member>(Constants.MemberFilePath);
-            var member = _members.FirstOrDefault(m => m.Id == memberId);
+            _books = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
+            _members = await _fileService.LoadAsync<Member>(Constants.FilePaths.Members);
+            var member = _members.FirstOrDefault(m => m.MemberID == memberId);
             if (member == null)
             {
                 return new List<Book>();
             }
-            var books = _books.Where(b => member.BorrowedBookIds.Contains(b.Id)).ToList();
+            var books = _books.Where(b => member.MemberBorrowedBookIDs.Contains(b.BookID)).ToList();
             return books;
         }
     }
