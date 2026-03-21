@@ -3,7 +3,7 @@ using LibraryManagementSystem.Services.Filepath;
 
 namespace LibraryManagementSystem.Services.Logics
 {
-    internal class AddMember
+    public class AddMember
     {
         private List<Member> _members = new List<Member>();
         private readonly FileService _fileService;
