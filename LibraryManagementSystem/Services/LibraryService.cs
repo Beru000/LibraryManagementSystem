@@ -51,18 +51,18 @@ namespace LibraryManagementSystem.Services
         // Borrow a book
         public async Task<bool> BorrowBookAsync(int bookId, int memberId)
         {
-            var book = _books.FirstOrDefault(b => b.Id == bookId);
-            var member = _members.FirstOrDefault(m => m.Id == memberId);
+            var book = _books.FirstOrDefault(b => b.BookID == bookId);
+            var member = _members.FirstOrDefault(m => m.MemberID == memberId);
             if (book == null || member == null)
             {
                 return false;
             }
-            if (!book.IsAvailable)
+            if (!book.BookIsAvailable)
             {
                 return false;
             }
-            book.IsAvailable = false;
-            member.BorrowedBookIds.Add(bookId);
+            book.BookIsAvailable = false;
+            member.MemberBorrowedBookIDs.Add(bookId);
             int recordId = _borrowRecords.Count + 1;
             var record = new BorrowRecord(recordId, bookId, memberId);
             await SaveDataAsync();
@@ -72,18 +72,18 @@ namespace LibraryManagementSystem.Services
         // Return a book
         public async Task<bool> ReturnBookAsync(int bookId, int memberId)
         {
-            var book = _books.FirstOrDefault(b => b.Id == bookId);
-            var member = _members.FirstOrDefault(m => m.Id == memberId);
+            var book = _books.FirstOrDefault(b => b.BookID == bookId);
+            var member = _members.FirstOrDefault(m => m.MemberID == memberId);
             if (book == null || member == null)
             {
                 return false;
             }
-            book.IsAvailable = true;
-            member.BorrowedBookIds.Remove(bookId);
-            var record = _borrowRecords.FirstOrDefault(r => r.BookId == bookId && r.MemberId == memberId&&r.ReturnDate==null);
+            book.BookIsAvailable = true;
+            member.MemberBorrowedBookIDs.Remove(bookId);
+            var record = _borrowRecords.FirstOrDefault(r => r.BorrowRecordBookID == bookId && r.BorrowRecordMemberID == memberId&&r.BorrowRecordReturnDate==null);
             if (record != null)
             {
-                record.ReturnDate = DateTime.Now;
+                record.BorrowRecordReturnDate = DateTime.Now;
             }
             await SaveDataAsync();
             return true;
@@ -92,24 +92,24 @@ namespace LibraryManagementSystem.Services
         // Get all available books — LINQ
         public List<Book> GetAvailableBooks()
         {
-            return _books.Where(b => b.IsAvailable).ToList();
+            return _books.Where(b => b.BookIsAvailable).ToList();
         }
 
         // Search books by title or author — LINQ
         public List<Book> SearchBooks(string query)
         {
-             return _books.Where(b => b.Title.ToLower().Contains(query.ToLower()) || b.Author.ToLower().Contains(query.ToLower())).ToList();
+             return _books.Where(b => b.BookTitle.ToLower().Contains(query.ToLower()) || b.BookAuthor.ToLower().Contains(query.ToLower())).ToList();
         }
 
         // Get all books a member is currently borrowing — LINQ
         public List<Book> GetMemberBooks(int memberId)
         {
-            var member=_members.FirstOrDefault(m => m.Id == memberId);
+            var member=_members.FirstOrDefault(m => m.MemberID == memberId);
             if(member==null)
             {
                 return new List<Book>();
             }
-            var books = _books.Where(b=>member.BorrowedBookIds.Contains(b.Id)).ToList();
+            var books = _books.Where(b => member.MemberBorrowedBookIDs.Contains(b.BookID)).ToList();
             return books;
         }
 

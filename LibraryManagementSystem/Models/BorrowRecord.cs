@@ -2,18 +2,17 @@
 {
     public class BorrowRecord
     {
-        public int Id { get; set; } 
-        public int BookId { get; set; }
-        public int MemberId { get; set; }
-        public DateTime BorrowDate { get; set; }
-        public DateTime? ReturnDate { get; set; }
-        public BorrowRecord(int id, int bookId, int memberId)
+        public int BorrowRecordBookID { get; set; }
+        public int BorrowRecordMemberID { get; set; }
+        public DateTime BorrowRecordCreateDate { get; set; }
+        public DateTime? BorrowRecordReturnDate { get; set; }
+
+        public BorrowRecord(int bookId, int memberId)
         {
-            Id = id;
-            BookId = bookId;
-            MemberId = memberId;
-            BorrowDate = DateTime.Now;
-            ReturnDate = null;
+            BorrowRecordBookID = bookId;
+            BorrowRecordMemberID = memberId;
+            BorrowRecordCreateDate = DateTime.Now;
+            BorrowRecordReturnDate = null;
         }
     }
 }

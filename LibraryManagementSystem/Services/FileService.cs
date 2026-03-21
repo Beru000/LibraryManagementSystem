@@ -19,16 +19,18 @@ namespace LibraryManagementSystem.Services
 
         public async Task<List<T>> LoadAsync<T>(string fileName)
         {
+            var result = new List<T>(); 
+
             string filePath = Path.Combine(_dataPath, fileName);
             if (File.Exists(filePath))
             {
                 string content = await File.ReadAllTextAsync(filePath);
-                return JsonSerializer.Deserialize<List<T>>(content) ?? new List<T>();
+                var collection = JsonSerializer.Deserialize<List<T>>(content) ?? new List<T>();
+
+                result = collection;
             }
-            else
-            {
-                return new List<T>();
-            }
+
+            return result;
         }
     }
 }

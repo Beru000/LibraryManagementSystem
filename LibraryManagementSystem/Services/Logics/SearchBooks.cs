@@ -15,8 +15,8 @@ namespace LibraryManagementSystem.Services.Logics
 
         public async Task<List<Book>> SearchBooksAsync(string query)
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.BookFilePath);
-            return _books.Where(b => b.Title.ToLower().Contains(query.ToLower()) || b.Author.ToLower().Contains(query.ToLower())).ToList();
+            _books = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
+            return _books.Where(b => b.BookTitle.ToLower().Contains(query.ToLower()) || b.BookAuthor.ToLower().Contains(query.ToLower())).ToList();
         }
     }
 }

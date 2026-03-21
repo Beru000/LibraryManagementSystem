@@ -2,19 +2,21 @@
 {
     public class Book
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string Genre { get; set; }   
-        public bool IsAvailable { get; set; }
+        // ctrl + r + r
+
+        public int BookID { get; set; }
+        public string BookTitle { get; set; }
+        public string BookAuthor { get; set; }
+        public string BookGenre { get; set; }   
+        public bool BookIsAvailable { get; set; }
 
         public Book(int id, string title, string author, string genre)
         {
-            Id = id;
-            Title = title;
-            Author = author;
-            Genre = genre;
-            IsAvailable = true;
+            BookID = id;
+            BookTitle = title;
+            BookAuthor = author;
+            BookGenre = genre;
+            BookIsAvailable = true;
         }
     }
 }
