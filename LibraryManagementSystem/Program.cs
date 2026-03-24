@@ -1,13 +1,11 @@
 ﻿using LibraryManagementSystem.Services;
+using LibraryManagementSystem.Services.Logics;
 
 class Program
 {
     static async Task Main()
     {
         var fileService = new FileService();
-        var library = new LibraryService(fileService);
-        await library.InitializeAsync();
-
         bool running = true;
         while (running)
         {
@@ -27,42 +25,109 @@ class Program
             switch (choice)
             {
                 case "1":
-                    // Ask user for title, author, genre
-                    // Call library.AddBookAsync()
+                    Console.Write("Enter book title: ");
+                    var title = Console.ReadLine();
+                    Console.Write("Enter book author: ");
+                    var author = Console.ReadLine();
+                    Console.Write("Enter book genre: ");
+                    var genre = Console.ReadLine();
+                    var addBook = new AddBook(fileService);
+                    await addBook.AddBookAsync(title ?? string.Empty, author ?? string.Empty, genre ?? string.Empty);
+                    Console.WriteLine("\nBook added successfully!");
                     break;
 
                 case "2":
-                    // Ask user for name, email
-                    // Call library.AddMemberAsync()
+                    Console.Write("Enter member name: ");
+                    var name = Console.ReadLine();
+                    Console.Write("Enter member email: ");
+                    var email = Console.ReadLine();
+                    var addMember = new AddMember(fileService);
+                    await addMember.AddMemberAsync(name ?? string.Empty, email ?? string.Empty);
+                    Console.WriteLine("\nMember added successfully!");
                     break;
 
                 case "3":
-                    // Ask user for bookId and memberId
-                    // Call library.BorrowBookAsync()
-                    // Print success or failure message
+                    Console.WriteLine("Enter book ID to borrow: ");
+                    int bookId = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("Enter member ID: ");
+                    int memberId = Convert.ToInt32(Console.ReadLine());
+                    var borrowBook = new BorrowBook(fileService, bookId, memberId);
+                    var borrowResult = await borrowBook.Execute();
+                    if (borrowResult.IsError)
+                    {
+                        Console.WriteLine($"\nError: {borrowResult.ErrorMessage}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nBook borrowed successfully!");
+                    }
                     break;
 
                 case "4":
-                    // Ask user for bookId and memberId
-                    // Call library.ReturnBookAsync()
-                    // Print success or failure message
+                    Console.WriteLine("Enter book ID to return: ");
+                    var returnBookId = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("Enter member ID: ");
+                    var returnMemberId = Convert.ToInt32(Console.ReadLine());
+                    var returnBook = new ReturnBook(fileService, returnBookId, returnMemberId);
+                    var returnResult = await returnBook.Execute();
+                    if (returnResult.IsError)
+                    {
+                        Console.WriteLine($"\nError: {returnResult.ErrorMessage}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nBook returned successfully!");
+
+                    }
                     break;
 
                 case "5":
-                    // Call library.GetAvailableBooks()
-                    // Print each book's Id, Title, Author
+                    var library = new GetAvailableBooks(fileService);
+                    var availableBooks = await library.GetAvailableBooksAsync();
+                    if (!availableBooks.Any())
+                    {
+                        Console.WriteLine("\nNo available books found.");
+                        break;
+                    }
+                    Console.WriteLine("\n=== Available Books ===");
+                    foreach (var book in availableBooks)
+                    {
+                        Console.WriteLine($"ID: {book.BookID}, Title: {book.BookTitle}, Author: {book.BookAuthor}");
+                    }
                     break;
 
                 case "6":
-                    // Ask user for search query
-                    // Call library.SearchBooks()
-                    // Print results
+                    Console.Write("Enter search query (title, author, or genre): ");
+                    var searchQuery = Console.ReadLine() ?? string.Empty;
+                    var searchLogic = new SearchBooks(fileService);
+                    var searchResults = await searchLogic.SearchBooksAsync(searchQuery);
+                    if (!searchResults.Any())
+                    {
+                        Console.WriteLine("\nNo books found matching your search.");
+                        break;
+                    }
+                    Console.WriteLine("\n=== Search Results ===");
+                    foreach (var book in searchResults)
+                    {
+                        Console.WriteLine($"ID: {book.BookID}, Title: {book.BookTitle}, Author: {book.BookAuthor}, Genre: {book.BookGenre}");
+                    }
                     break;
 
                 case "7":
-                    // Ask user for memberId
-                    // Call library.GetMemberBooks()
-                    // Print results
+                    Console.Write("Enter member ID: ");
+                    var id = Convert.ToInt32(Console.ReadLine());
+                    var memberBooksLogic = new GetMemberBooks(fileService);
+                    var memberBooks = await memberBooksLogic.GetMemberBooksAsync(id);
+                    if (!memberBooks.Any())
+                    {
+                        Console.WriteLine("\nThis member has no borrowed books.");
+                        break;
+                    }
+                    Console.WriteLine("\n=== Member's Borrowed Books ==="); // moved outside loop
+                    foreach (var book in memberBooks)
+                    {
+                        Console.WriteLine($"ID: {book.BookID}, Title: {book.BookTitle}, Author: {book.BookAuthor}");
+                    }
                     break;
 
                 case "8":

@@ -40,16 +40,33 @@ namespace LibraryManagementSystem.Services.Logics
         async Task CreateBorrowRecord()
         {
             _borrowRecords = await _fileService.LoadAsync<BorrowRecord>(Constants.FilePaths.BorrowRecords);
+            var bookList =await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
+            Book ?borrowedBook = bookList.FirstOrDefault(item => item.BookID == _bookID);
+            if (borrowedBook is null)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = $"Book with ID {_bookID} was not found.";
+                return;
+            }
 
-            var borrowRecord = new BorrowRecord(bookId: _bookID, memberId: _memberID);
+            if (!borrowedBook.BookIsAvailable)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = $"Book with ID {_bookID} is already borrowed.";
+                return;
+            }
+
+            var borrowRecord = new BorrowRecord(borrowRecordBookID: _bookID, borrowRecordMemberID: _memberID);
+            borrowedBook.BookIsAvailable = false;
             _borrowRecords.Add(borrowRecord);
 
             await _fileService.SaveAsync(Constants.FilePaths.BorrowRecords, _borrowRecords);
+            await _fileService.SaveAsync(Constants.FilePaths.Books, bookList);
         }
 
         async Task EditMemberBorrowedBooks()
         {
-            var memberBorrowedBookIDs = _borrowRecords.Where(item => item.BorrowRecordMemberID == _memberID).Select(item => item.BorrowRecordBookID).ToList();
+            var memberBorrowedBookIDs = _borrowRecords.Where(item => item.BorrowRecordMemberID == _memberID&&item.BorrowRecordReturnDate==null).Select(item => item.BorrowRecordBookID).ToList();
 
             var editMemberLogic = new EditMember(
                 fileService: _fileService,

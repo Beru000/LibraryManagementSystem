@@ -4,7 +4,7 @@ namespace LibraryManagementSystem.Services
 {
     public class FileService
     {
-        private readonly string _dataPath = "Data";
+        private readonly string _dataPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Data"));
 
         public async Task SaveAsync<T>(string fileName, List<T> data)
         {

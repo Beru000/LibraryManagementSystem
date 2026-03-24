@@ -7,10 +7,10 @@
         public DateTime BorrowRecordCreateDate { get; set; }
         public DateTime? BorrowRecordReturnDate { get; set; }
 
-        public BorrowRecord(int bookId, int memberId)
+        public BorrowRecord(int borrowRecordBookID, int borrowRecordMemberID)
         {
-            BorrowRecordBookID = bookId;
-            BorrowRecordMemberID = memberId;
+            BorrowRecordBookID = borrowRecordBookID;
+            BorrowRecordMemberID = borrowRecordMemberID;
             BorrowRecordCreateDate = DateTime.Now;
             BorrowRecordReturnDate = null;
         }

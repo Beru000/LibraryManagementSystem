@@ -7,13 +7,12 @@
         public string MemberEmail { get; set; }
         public List<int> MemberBorrowedBookIDs { get; set; }
 
-        public Member(int id, string name, string email)
+        public Member(int memberID, string memberName, string memberEmail)
         {
-            MemberID = id;
-            MemberName = name;
-            MemberEmail = email;
+            MemberID = memberID;
+            MemberName = memberName;
+            MemberEmail = memberEmail;
             MemberBorrowedBookIDs = new List<int>();
-            
         }
     }
 }

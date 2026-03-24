@@ -10,12 +10,12 @@
         public string BookGenre { get; set; }   
         public bool BookIsAvailable { get; set; }
 
-        public Book(int id, string title, string author, string genre)
+        public Book(int bookID, string bookTitle, string bookAuthor, string bookGenre)
         {
-            BookID = id;
-            BookTitle = title;
-            BookAuthor = author;
-            BookGenre = genre;
+            BookID = bookID;
+            BookTitle = bookTitle;
+            BookAuthor = bookAuthor;
+            BookGenre = bookGenre;
             BookIsAvailable = true;
         }
     }

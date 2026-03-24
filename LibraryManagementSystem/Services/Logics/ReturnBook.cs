@@ -1,35 +1,88 @@
 ﻿using LibraryManagementSystem.Models;
 using LibraryManagementSystem.Services.Filepath;
+using LibraryManagementSystem.Services.Logics.Base;
 
 namespace LibraryManagementSystem.Services.Logics
 {
     public class ReturnBook
     {
-        private List<Member> _members = new List<Member>();
-        private List<Book> _books = new List<Book>();
+        private readonly LogicResultBase _result = new LogicResultBase();
         private readonly FileService _fileService;
+        private readonly int _bookID;
+        private readonly int _memberID;
+        private List<BorrowRecord> _borrowRecords = new List<BorrowRecord>();
 
-        public ReturnBook(FileService fileService)
+        public ReturnBook(FileService fileService, int bookID, int memberID)
         {
             _fileService = fileService;
+            _bookID = bookID;
+            _memberID = memberID;
         }
-        public async Task<bool> ReturnBookAsync(int bookId, int memberId)
+
+
+        public async Task<LogicResultBase> Execute()
         {
-            _books = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
-            _members = await _fileService.LoadAsync<Member>(Constants.FilePaths.Members);
-            var book = _books.FirstOrDefault(b => b.BookID == bookId);
-            var member = _members.FirstOrDefault(m => m.MemberID == memberId);
-            if (book == null || member == null)
+            await ChangeBorrowRecord();
+            if (!_result.IsError)
             {
-                return false;
+                await EditMemberBorrowedBooks();
             }
-            if (book.BookIsAvailable)
-            {
-                return false; 
-            }
-            book.BookIsAvailable = true; 
-            await _fileService.SaveAsync(Constants.FilePaths.Books, _books); 
-            return true;
+
+            return _result;
         }
+
+        async Task ChangeBorrowRecord()
+        {
+            _borrowRecords = await _fileService.LoadAsync<BorrowRecord>(Constants.FilePaths.BorrowRecords);
+            var bookList = await _fileService.LoadAsync<Book>(Constants.FilePaths.Books);
+            Book? borrowedBook = bookList.FirstOrDefault(item => item.BookID == _bookID);
+            if (borrowedBook is null)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = $"Book with ID {_bookID} was not found.";
+                return;
+            }
+
+            if (borrowedBook.BookIsAvailable)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = $"Book with ID {_bookID} is already returned.";
+                return;
+            }
+
+            var borrowRecord = _borrowRecords.FirstOrDefault(record => record.BorrowRecordBookID == _bookID && record.BorrowRecordMemberID == _memberID && record.BorrowRecordReturnDate == null);
+
+            if (borrowRecord is null)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = $"There is no such borrow record in our database";
+                return;
+            }
+
+            borrowRecord.BorrowRecordReturnDate = DateTime.Now;
+            borrowedBook.BookIsAvailable = true;
+            await _fileService.SaveAsync(Constants.FilePaths.BorrowRecords, _borrowRecords);
+            await _fileService.SaveAsync(Constants.FilePaths.Books, bookList);
+        }
+
+        async Task EditMemberBorrowedBooks()
+        {
+            var memberBorrowedBookIDs = _borrowRecords.Where(item => item.BorrowRecordMemberID == _memberID&&item.BorrowRecordReturnDate==null).Select(item => item.BorrowRecordBookID).ToList();
+
+            var editMemberLogic = new EditMember(
+                fileService: _fileService,
+                memberID: _memberID,
+                memberBorrowedBookIDs: memberBorrowedBookIDs
+            );
+
+            var editMemberResult = await editMemberLogic.Execute();
+
+            if (editMemberResult.IsError)
+            {
+                _result.IsError = true;
+                _result.ErrorMessage = editMemberResult.ErrorMessage;
+            }
+        }
+
     }
 }
